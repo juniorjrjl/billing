@@ -32,6 +32,7 @@ val mapstructVersion = "1.6.3"
 dependencies {
 	implementation("com.fasterxml.uuid:java-uuid-generator:5.2.0")
 	implementation("commons-validator:commons-validator:1.10.1")
+	implementation("org.apache.commons:commons-lang3:3.20.0")
 	implementation("org.mapstruct:mapstruct:${mapstructVersion}")
 	implementation("org.springframework.boot:spring-boot-h2console")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
