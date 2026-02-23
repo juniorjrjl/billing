@@ -1,7 +1,6 @@
 package com.algaworks.algashop.billing.domain.model.invoice;
 
 import jakarta.persistence.Embeddable;
-import jakarta.persistence.Table;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

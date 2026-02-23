@@ -3,11 +3,7 @@ package com.algaworks.algashop.billing.utility;
 import com.algaworks.algashop.billing.domain.model.invoice.Address;
 import com.algaworks.algashop.billing.domain.model.invoice.LineItem;
 import com.algaworks.algashop.billing.domain.model.invoice.Payer;
-import com.algaworks.algashop.billing.domain.model.invoice.PaymentMethod;
-import com.algaworks.algashop.billing.domain.model.invoice.PaymentSettings;
 import net.datafaker.providers.base.AbstractProvider;
-
-import java.util.UUID;
 
 public class InvoiceProvider extends AbstractProvider<CustomFaker> {
 
