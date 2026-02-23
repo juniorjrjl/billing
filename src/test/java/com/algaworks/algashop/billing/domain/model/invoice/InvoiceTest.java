@@ -126,11 +126,12 @@ class InvoiceTest {
     }
 
     private static Stream<Invoice> givenNonPaidInvoiceWhenChangePaymentSettingsThenThrowException(){
-        final var unpaid = InvoiceDataBuilder.builder().buildIssue();
+        final var paid = InvoiceDataBuilder.builder().buildIssue();
+        paid.markAsPaid();
         final var canceled = InvoiceDataBuilder.builder().buildIssue();
         canceled.cancel(customFaker.chuckNorris().fact());
         return Stream.of(
-                unpaid,
+                paid,
                 canceled
         );
     }
@@ -138,7 +139,6 @@ class InvoiceTest {
     @Test
     void shouldChangePaymentSettings(){
         final var invoice = InvoiceDataBuilder.builder().buildIssue();
-        invoice.markAsPaid();
         final var paymentMethod = customFaker.option(PaymentMethod.class);
         final var creditCard = UUID.randomUUID();
         invoice.changePaymentSettings(paymentMethod, creditCard);
@@ -164,19 +164,17 @@ class InvoiceTest {
     private static Stream<Arguments> givenNonPaidInvoiceWhenAssignPaymentGatewayCodeThenThrowException(){
         final var unpaid = InvoiceDataBuilder.builder().buildIssue();
         final var canceled = InvoiceDataBuilder.builder().buildIssue();
-        canceled.markAsPaid();
         canceled.changePaymentSettings(
                 customFaker.option(PaymentMethod.class),
                 UUID.randomUUID()
         );
+        canceled.markAsPaid();
         canceled.cancel(customFaker.chuckNorris().fact());
         final var alreadyAssigned = InvoiceDataBuilder.builder().buildIssue();
-        alreadyAssigned.markAsPaid();
         alreadyAssigned.changePaymentSettings(customFaker.option(PaymentMethod.class), UUID.randomUUID());
         alreadyAssigned.assignPaymentGatewayCode(customFaker.number().digits(4));
 
         final var invalidCode = InvoiceDataBuilder.builder().buildIssue();
-        invalidCode.markAsPaid();
         invalidCode.changePaymentSettings(
                 customFaker.option(PaymentMethod.class),
                 UUID.randomUUID()
@@ -203,7 +201,6 @@ class InvoiceTest {
     @Test
     void shouldAssignPaymentGatewayCode(){
         final var invoice = InvoiceDataBuilder.builder().buildIssue();
-        invoice.markAsPaid();
         invoice.changePaymentSettings(customFaker.option(PaymentMethod.class), UUID.randomUUID());
         final var code = customFaker.number().digits(4);
         invoice.assignPaymentGatewayCode(code);

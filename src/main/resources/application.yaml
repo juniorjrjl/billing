@@ -1,5 +1,6 @@
-spring:
+server:
   port: 8082
+spring:
   application:
     name: billing
   datasource:

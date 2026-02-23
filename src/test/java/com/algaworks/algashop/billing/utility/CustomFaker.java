@@ -53,6 +53,10 @@ public class CustomFaker extends Faker {
         return getProvider(InvoiceProvider.class, InvoiceProvider::new);
     }
 
+    public InvoiceInputProvider invoiceInput(){
+        return getProvider(InvoiceInputProvider.class, InvoiceInputProvider::new);
+    }
+
     public NumericProvider numeric(){
         return getProvider(NumericProvider.class, NumericProvider::new);
     }

@@ -1,6 +1,9 @@
 package com.algaworks.algashop.billing.domain.model.creditcard;
 
 import com.algaworks.algashop.billing.domain.model.IdGenerator;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,12 +17,15 @@ import java.util.UUID;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+@Entity
+@Table(name = "CREDIT_CARDS")
 @Setter(PRIVATE)
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
 public class CreditCard {
 
+    @Id
     private UUID id;
     private OffsetDateTime createdAt;
     private UUID customerId;

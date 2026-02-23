@@ -1,6 +1,7 @@
-package com.algaworks.algashop.billing.utility;
+package com.algaworks.algashop.billing.utility.databuilder.domain;
 
 import com.algaworks.algashop.billing.domain.model.creditcard.CreditCard;
+import com.algaworks.algashop.billing.utility.CustomFaker;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.With;

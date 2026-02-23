@@ -1,6 +1,6 @@
 package com.algaworks.algashop.billing.domain.model.creditcard;
 
-import com.algaworks.algashop.billing.utility.CreditCardDataBuilder;
+import com.algaworks.algashop.billing.utility.databuilder.domain.CreditCardDataBuilder;
 import com.algaworks.algashop.billing.utility.CustomFaker;
 import com.algaworks.algashop.billing.utility.tag.UnitTest;
 import org.junit.jupiter.api.BeforeEach;

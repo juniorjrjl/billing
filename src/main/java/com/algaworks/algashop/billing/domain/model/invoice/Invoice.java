@@ -3,6 +3,15 @@ package com.algaworks.algashop.billing.domain.model.invoice;
 import com.algaworks.algashop.billing.domain.model.DomainException;
 import com.algaworks.algashop.billing.domain.model.IdGenerator;
 import io.micrometer.common.util.StringUtils;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,16 +29,21 @@ import java.util.UUID;
 import static com.algaworks.algashop.billing.domain.model.invoice.InvoiceStatus.CANCELED;
 import static com.algaworks.algashop.billing.domain.model.invoice.InvoiceStatus.PAID;
 import static com.algaworks.algashop.billing.domain.model.invoice.InvoiceStatus.UNPAID;
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.EnumType.STRING;
 import static java.util.Objects.isNull;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
+@Table(name = "INVOICES")
+@Entity
 @Setter(PRIVATE)
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
 public class Invoice {
 
+    @Id
     private UUID id;
     private String orderId;
     private UUID customerId;
@@ -40,10 +54,15 @@ public class Invoice {
     private OffsetDateTime canceledAt;
     private OffsetDateTime expiresAt;
     private BigDecimal totalAmount;
+    @Enumerated(STRING)
     private InvoiceStatus invoiceStatus;
     @Nullable
+    @OneToOne(cascade = ALL)
     private PaymentSettings paymentSettings;
+    @ElementCollection
+    @CollectionTable(name = "INVOIVE_LINES_ITEMS", joinColumns = @JoinColumn(name = "invoice_id"))
     private Set<LineItem> items = new HashSet<>();
+    @Embedded
     private Payer payer;
     @Nullable
     private String cancelReason;
@@ -106,7 +125,7 @@ public class Invoice {
             final var message = String.format("Invoice %s has no payment settings", this.id);
             throw new DomainException(message);
         }
-        if (!isPaid()){
+        if (!isUnpaid()){
             final var message = String.format(
                     "Invoice %s with status '%s' cannot be edited",
                     this.id,
@@ -117,8 +136,10 @@ public class Invoice {
         this.paymentSettings.assignGatewayCode(code);
     }
 
-    public void changePaymentSettings(final PaymentMethod method, final UUID creditCard) {
-        if (!isPaid()){
+    public void changePaymentSettings(final PaymentMethod method,
+                                      @Nullable
+                                      final UUID creditCard) {
+        if (!isUnpaid()){
             final var message = String.format(
                     "Invoice %s with status '%s' cannot be edited",
                     this.id,
@@ -126,7 +147,7 @@ public class Invoice {
             );
             throw new DomainException(message);
         }
-        this.paymentSettings = PaymentSettings.brandNew(method, creditCard);
+        this.paymentSettings = PaymentSettings.brandNew(method, creditCard, this);
     }
 
     public Set<LineItem> getItems() {
