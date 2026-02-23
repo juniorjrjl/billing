@@ -75,7 +75,15 @@ class InvoiceTest {
     @Test
     void shouldIssueInvoice(){
         final var invoice = InvoiceDataBuilder.builder().buildIssue();
-        assertThat(invoice).hasNoNullFieldsOrPropertiesExcept("paidAt", "canceledAt", "paymentSettings", "cancelReason");
+        assertThat(invoice).hasNoNullFieldsOrPropertiesExcept("paidAt",
+                "canceledAt",
+                "paymentSettings",
+                "cancelReason",
+                "createdByUserId",
+                "createdAt",
+                "lastModifiedByUserId",
+                "lastModifiedAt"
+        );
         assertThat(invoice.getInvoiceStatus()).isEqualTo(UNPAID);
         assertThat(invoice.getIssuedAt()).isBeforeOrEqualTo(OffsetDateTime.now());
         assertThat(invoice.getExpiresAt()).isCloseTo(invoice.getIssuedAt().plusDays(3), within(1, MILLIS));

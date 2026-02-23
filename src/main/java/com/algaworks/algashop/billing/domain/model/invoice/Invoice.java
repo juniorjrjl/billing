@@ -1,5 +1,6 @@
 package com.algaworks.algashop.billing.domain.model.invoice;
 
+import com.algaworks.algashop.billing.domain.model.AbstractAuditableAggregateRoot;
 import com.algaworks.algashop.billing.domain.model.DomainException;
 import com.algaworks.algashop.billing.domain.model.IdGenerator;
 import io.micrometer.common.util.StringUtils;
@@ -32,6 +33,7 @@ import static com.algaworks.algashop.billing.domain.model.invoice.InvoiceStatus.
 import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.EnumType.STRING;
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 import static lombok.AccessLevel.PRIVATE;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -41,7 +43,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Getter
 @NoArgsConstructor(access = PROTECTED)
 @AllArgsConstructor(access = PROTECTED)
-public class Invoice {
+public class Invoice extends AbstractAuditableAggregateRoot<Invoice> {
 
     @Id
     private UUID id;
@@ -77,7 +79,7 @@ public class Invoice {
         if (items.isEmpty()) {
             throw new IllegalArgumentException("Items cannot be empty");
         }
-        return new  Invoice(
+        final var invoice = new Invoice(
                 IdGenerator.generateTimeBasedUUID(),
                 orderId,
                 customerId,
@@ -92,6 +94,14 @@ public class Invoice {
                 payer,
                 null
         );
+        final var event = new InvoiceIssuedEvent(
+                invoice.getId(),
+                invoice.getCustomerId(),
+                invoice.getOrderId(),
+                invoice.getIssuedAt()
+                );
+        invoice.registerEvent(event);
+        return invoice;
     }
 
     public void markAsPaid() {
@@ -105,6 +115,13 @@ public class Invoice {
         }
         setPaidAt(OffsetDateTime.now());
         setInvoiceStatus(PAID);
+        final var event = new InvoicePaidEvent(
+                this.getId(),
+                this.getCustomerId(),
+                this.getOrderId(),
+                requireNonNull(this.getPaidAt())
+        );
+        registerEvent(event);
     }
 
     public void cancel(final String cancelReason) {
@@ -118,6 +135,13 @@ public class Invoice {
         setCancelReason(cancelReason);
         setCanceledAt(OffsetDateTime.now());
         setInvoiceStatus(CANCELED);
+        final var event = new InvoiceCanceledEvent(
+                this.getId(),
+                this.getCustomerId(),
+                this.getOrderId(),
+                requireNonNull(this.getCanceledAt())
+        );
+        registerEvent(event);
     }
 
     public void assignPaymentGatewayCode(final String code) {

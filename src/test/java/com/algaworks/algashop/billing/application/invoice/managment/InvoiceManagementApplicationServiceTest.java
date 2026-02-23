@@ -3,11 +3,14 @@ package com.algaworks.algashop.billing.application.invoice.managment;
 import com.algaworks.algashop.billing.domain.model.DomainException;
 import com.algaworks.algashop.billing.domain.model.creditcard.CreditCardNotFoundException;
 import com.algaworks.algashop.billing.domain.model.creditcard.CreditCardRepository;
+import com.algaworks.algashop.billing.domain.model.invoice.InvoiceIssuedEvent;
+import com.algaworks.algashop.billing.domain.model.invoice.InvoicePaidEvent;
 import com.algaworks.algashop.billing.domain.model.invoice.InvoiceRepository;
 import com.algaworks.algashop.billing.domain.model.invoice.InvoicingService;
 import com.algaworks.algashop.billing.domain.model.invoice.PaymentMethod;
 import com.algaworks.algashop.billing.domain.model.invoice.payment.PaymentGatewayService;
 import com.algaworks.algashop.billing.domain.model.invoice.payment.PaymentRequest;
+import com.algaworks.algashop.billing.infratructure.listener.InvoiceEventListener;
 import com.algaworks.algashop.billing.utility.AbstractApplicationTest;
 import com.algaworks.algashop.billing.utility.InvoiceDataBuilder;
 import com.algaworks.algashop.billing.utility.databuilder.application.GenerateInvoiceInputDataBuilder;
@@ -28,6 +31,7 @@ import static com.algaworks.algashop.billing.domain.model.invoice.payment.Paymen
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -44,6 +48,9 @@ class InvoiceManagementApplicationServiceTest extends AbstractApplicationTest {
 
     @MockitoBean
     private PaymentGatewayService paymentGatewayService;
+
+    @MockitoSpyBean
+    private InvoiceEventListener eventListener;
 
     @Autowired
     public InvoiceManagementApplicationServiceTest(final JdbcTemplate jdbcTemplate,
@@ -71,6 +78,11 @@ class InvoiceManagementApplicationServiceTest extends AbstractApplicationTest {
                 .build();
         final var actual = applicationService.generate(input);
         assertThat(invoiceRepository.existsById(actual)).isTrue();
+        final var actualInvoice = invoiceRepository.findById(actual).orElseThrow();
+        assertThat(actualInvoice.getVersion()).isZero();
+        assertThat(actualInvoice.getCreatedAt()).isNotNull();
+        assertThat(actualInvoice.getCreatedByUserId()).isNotNull();
+        verify(eventListener).listen(any(InvoiceIssuedEvent.class));
     }
 
     @Test
@@ -133,6 +145,7 @@ class InvoiceManagementApplicationServiceTest extends AbstractApplicationTest {
         applicationService.processPayment(invoice.getId());
         final var actual = invoiceRepository.findById(invoice.getId()).orElseThrow();
         assertThat(actual.isPaid()).isTrue();
+        verify(eventListener).listen(any(InvoicePaidEvent.class));
     }
 
 }
